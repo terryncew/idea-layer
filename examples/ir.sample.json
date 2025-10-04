@@ -1,0 +1,26 @@
+{
+  "schema_version": "idea_layer/v0.1",
+  "receipt_id": "ulid-placeholder",
+  "idea_id": "uuid-placeholder",
+  "creator_anon_id": "creator#abc123",
+  "privacy": {
+    "idea_hmac": "deadbeef",
+    "prompt_hmac": "deadbeef",
+    "len_bin": "M"
+  },
+  "signals": {
+    "kappa": 0.22,
+    "delta_hol": { "prompt": 0.1, "tool": 0.0, "retrieval": 0.2, "model": 0.0, "cache": 0.0 },
+    "ucr": 0.18,
+    "cycles": 0,
+    "contradictions": 0,
+    "guard_failures": ["none"]
+  },
+  "priors": { "plausibility_p": 0.66, "novelty_bucket": "high" },
+  "policy": {
+    "license": { "scope": "research-noncommercial" },
+    "consent": { "version": "v1" },
+    "retention_days": 365
+  },
+  "provenance": { "iat": "2025-10-03T12:00:00Z", "sig": { "alg":"hmac-sha256","kid":"default","sig":"..." } }
+}
