@@ -1,0 +1,113 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.org/schemas/v0.1/ir.schema.json",
+  "title": "Idea Receipt (IR) v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version","receipt_id","idea_id","creator_anon_id",
+    "privacy","signals","priors","policy","provenance"
+  ],
+  "properties": {
+    "schema_version": { "const": "idea_layer/v0.1" },
+    "receipt_id": { "type":"string" },
+    "idea_id": { "type":"string" },
+    "creator_anon_id": { "type":"string" },
+    "privacy": {
+      "type":"object",
+      "required":["idea_hmac","prompt_hmac","len_bin"],
+      "properties":{
+        "idea_hmac":{"type":"string"},
+        "prompt_hmac":{"type":"string"},
+        "len_bin":{"type":"string","enum":["S","M","L","XL"]}
+      },
+      "additionalProperties": false
+    },
+    "signals": {
+      "type":"object",
+      "required":["kappa","delta_hol","ucr","cycles","contradictions","guard_failures"],
+      "properties":{
+        "kappa":{"type":"number","minimum":0},
+        "delta_hol":{
+          "type":"object",
+          "required":["prompt","tool","retrieval","model","cache"],
+          "properties":{
+            "prompt":{"type":"number","minimum":0},
+            "tool":{"type":"number","minimum":0},
+            "retrieval":{"type":"number","minimum":0},
+            "model":{"type":"number","minimum":0},
+            "cache":{"type":"number","minimum":0}
+          },
+          "additionalProperties": false
+        },
+        "ucr":{"type":"number","minimum":0,"maximum":1},
+        "cycles":{"type":"integer","minimum":0},
+        "contradictions":{"type":"integer","minimum":0},
+        "guard_failures":{
+          "type":"array",
+          "items":{"type":"string","enum":[
+            "none","logical_cycle","self_contradiction",
+            "safety_policy","duplicate_claim","license_conflict"
+          ]},
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "priors":{
+      "type":"object",
+      "required":["plausibility_p","novelty_bucket"],
+      "properties":{
+        "plausibility_p":{"type":"number","minimum":0,"maximum":1},
+        "novelty_bucket":{"type":"string","enum":["low","medium","high"]}
+      },
+      "additionalProperties": false
+    },
+    "policy":{
+      "type":"object",
+      "required":["license","consent","retention_days"],
+      "properties":{
+        "license":{
+          "type":"object",
+          "required":["scope"],
+          "properties":{"scope":{"type":"string","enum":[
+            "audit-only","research-noncommercial","train-critic",
+            "limited-production","full-production"
+          ]},"terms_url":{"type":"string"}}
+        },
+        "consent":{"type":"object","required":["version"],"properties":{"version":{"type":"string"}}},
+        "retention_days":{"type":"integer","minimum":0}
+      },
+      "additionalProperties": false
+    },
+    "provenance":{
+      "type":"object",
+      "required":["iat","sig"],
+      "properties":{
+        "iat":{"type":"string","format":"date-time"},
+        "transparency_anchor":{
+          "type":"object",
+          "required":["type"],
+          "properties":{
+            "type":{"type":"string","enum":["rekor","rfc3161","local"]},
+            "log_index":{"type":"integer","minimum":0},
+            "inclusion_proof":{"type":"string"},
+            "root":{"type":"string"}
+          },
+          "additionalProperties": false
+        },
+        "sig":{
+          "type":"object",
+          "required":["alg","kid","sig"],
+          "properties":{
+            "alg":{"type":"string","enum":["hmac-sha256"]},
+            "kid":{"type":"string"},
+            "sig":{"type":"string"}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
