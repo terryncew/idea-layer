@@ -1,0 +1,10 @@
+{
+  "schema_version":"idea_layer/v0.1",
+  "receipt_id":"ulid-2",
+  "idea_id":"uuid-1",
+  "method":"expert_check",
+  "attestation":{"method_details":"two experts","evidence_anchor":"sha256:deadbeef"},
+  "outcome":{"support_score":0.7,"counter_evidence_count":0,"cost_minutes":30},
+  "rater":{"rater_anon_id":"r#1","rater_rep":0.5,"adversarial_flag":false,"rep_update_rule":"elo"},
+  "provenance":{"iat":"2025-10-03T00:05:00Z","sig":{"alg":"hmac-sha256","kid":"default","sig":"s"}}
+}
