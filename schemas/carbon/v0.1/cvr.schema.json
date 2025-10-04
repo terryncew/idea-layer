@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Carbon Verification Receipt (CVR) v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "const": "carbon/v0.1" },
+
+    "cpr_id": { "type": "string", "minLength": 1 },
+
+    "verifier": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": { "type": "string" },
+            "accreditation_id": { "type": "string" }
+          },
+          "required": ["name"]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": { "auto_mrv": { "const": true } },
+          "required": ["auto_mrv"]
+        }
+      ]
+    },
+
+    "method_details": { "type": "string" },
+    "uncertainty_pct": { "type": "number", "minimum": 0, "maximum": 100 },
+    "issued_delta_tco2e": { "type": "number" },
+    "buffer_pct": { "type": "number", "minimum": 0, "maximum": 100 },
+
+    "evidence_anchor": { "type": "string" },
+
+    "rater": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "rater_anon_id": { "type": "string" },
+        "rater_rep": { "type": "number", "minimum": 0, "maximum": 1 }
+      },
+      "required": ["rater_anon_id", "rater_rep"]
+    },
+
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "iat": { "type": "string", "format": "date-time" },
+        "sig": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "alg": { "type": "string", "enum": ["hmac-sha256", "ed25519"] },
+            "kid": { "type": "string" },
+            "sig": { "type": "string" }
+          },
+          "required": ["alg", "kid", "sig"]
+        }
+      },
+      "required": ["iat", "sig"]
+    }
+  },
+  "required": [
+    "schema_version",
+    "cpr_id",
+    "verifier",
+    "method_details",
+    "uncertainty_pct",
+    "issued_delta_tco2e",
+    "buffer_pct",
+    "provenance"
+  ]
+}
