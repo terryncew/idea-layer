@@ -1,0 +1,44 @@
+{
+  "schema_version": "carbon/v0.1",
+  "cpr_id": "CPR-woodland-001",
+  "cvr_ids": ["CVR-0001"],
+  "serials": [
+    { "registry": "verra", "project_id": "VCS-1234", "range_start": "5000", "range_end": "5999" }
+  ],
+  "vintage_start": "2024-01-01",
+  "vintage_end": "2024-12-31",
+  "quantity": {
+    "nominal_tco2e": 1000,
+    "risk_adjusted_tco2e": 850,
+    "buffer_held_tco2e": 150,
+    "effective_tco2e": 850
+  },
+  "status": "retired",
+  "retirement": { "date": "2025-10-01", "purpose": "AI workload offset", "claimant": "UserCo" },
+  "registry_anchor": {
+    "registry": "verra",
+    "project_id": "VCS-1234",
+    "serial_range": "5000-5999",
+    "issuance_date": "2024-03-15",
+    "retirement_date": "2025-10-01",
+    "verification_url": "https://registry.verra.org/app/project/VCS-1234"
+  },
+  "quality": {
+    "Kc": 0.28,
+    "delta_hol_carbon": { "biomass": 0.1, "soil_carbon": 0.0, "methane": 0.05, "baseline_model": 0.1 }
+  },
+  "buyer_disclosure": {
+    "claim_type": "offset",
+    "scope": "product",
+    "claimant": "UserCo",
+    "public_statement_url": "https://example.com/sustainability#offsets"
+  },
+  "rights": {
+    "license": { "scope": "retire" },
+    "royalty_split": { "creator": 0.7, "validators": 0.2, "platform": 0.1 }
+  },
+  "provenance": {
+    "iat": "2025-10-03T00:30:00Z",
+    "sig": { "alg": "hmac-sha256", "kid": "default", "sig": "..." }
+  }
+}
