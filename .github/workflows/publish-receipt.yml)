@@ -1,0 +1,119 @@
+name: Mint + Anchor + Publish IR
+
+on:
+  workflow_dispatch:
+    inputs:
+      summary:
+        description: 'Idea summary (HMAC only; see note below)'
+        required: true
+      prompt:
+        description: 'Prompt (optional; HMAC only)'
+        required: false
+        default: ''
+      kappa:
+        description: 'κ stress (0–1)'
+        required: true
+        default: '0.22'
+      ucr:
+        description: 'Unsupported-claim ratio (0–1)'
+        required: true
+        default: '0.18'
+      plaus:
+        description: 'Plausibility (0–1)'
+        required: true
+        default: '0.66'
+      novelty:
+        description: 'Novelty bucket'
+        required: true
+        type: choice
+        options: [low, medium, high]
+        default: high
+      scope:
+        description: 'License scope'
+        required: true
+        type: choice
+        options: [audit-only, research-noncommercial, train-critic, limited-production, full-production]
+        default: research-noncommercial
+
+permissions:
+  contents: write
+
+concurrency:
+  group: transparency-log
+  cancel-in-progress: false
+
+jobs:
+  mint:
+    runs-on: ubuntu-latest
+    env:
+      IDEA_LAYER_HMAC_KEY: ${{ secrets.IDEA_LAYER_HMAC_KEY }}
+      IDEA_LAYER_KEY_ID: gha-default
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install
+        run: |
+          python -m pip install -U pip
+          pip install -e ".[dev]"
+
+      - name: Mint IR (signed)
+        run: |
+          mkdir -p receipts
+          idea-layer ir \
+            --creator "creator#gha" \
+            --summary "${{ inputs.summary }}" \
+            --prompt "${{ inputs.prompt }}" \
+            --kappa ${{ inputs.kappa }} \
+            --ucr ${{ inputs.ucr }} \
+            --plaus ${{ inputs.plaus }} \
+            --novelty ${{ inputs.novelty }} \
+            --scope ${{ inputs.scope }} \
+            --out receipts/ir.${{ github.run_id }}.json
+
+      - name: Anchor locally (Merkle log)
+        run: |
+          python tools/anchor_local.py receipts/ir.${{ github.run_id }}.json
+
+      - name: Verify signature & schema
+        run: |
+          python tools/verify_receipt.py receipts/ir.${{ github.run_id }}.json
+          python - <<'PY'
+          import json, pathlib
+          from jsonschema import validate
+          root = pathlib.Path('.')
+          schema = json.loads((root/'schemas/v0.1/ir.schema.json').read_text())
+          data = json.loads((root/'receipts'/'ir.${{ github.run_id }}.json').read_text())
+          validate(instance=data, schema=schema)
+          print("Schema OK")
+          PY
+
+      - name: Publish to docs/receipts/ (for Pages)
+        run: |
+          mkdir -p docs/receipts
+          ts=$(date -u +"%Y%m%dT%H%M%SZ")
+          cp receipts/ir.${{ github.run_id }}.json docs/receipts/ir.${ts}.json
+          # Maintain a simple index
+          jq -s '.' docs/receipts/*.json > docs/receipts/index.json || echo "[]">docs/receipts/index.json
+
+      - name: Commit & push
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git add transparency/ docs/receipts/
+          git commit -m "Add IR receipt (${GITHUB_RUN_ID}) [skip ci]" || echo "Nothing to commit"
+          git push
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ir-${{ github.run_id }}
+          path: |
+            receipts/ir.${{ github.run_id }}.json
+            transparency/log.jsonl
+            transparency/STATE.json
