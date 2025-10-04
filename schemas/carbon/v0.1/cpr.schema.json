@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Carbon Project Receipt (CPR) v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "const": "carbon/v0.1" },
+
+    "project_id": { "type": "string", "minLength": 1 },
+    "registry": {
+      "type": "string",
+      "enum": ["verra", "goldstandard", "acr", "car", "puro", "other"]
+    },
+    "registry_project_id": { "type": "string", "minLength": 1 },
+
+    "methodology_code": { "type": "string" },
+    "country": { "type": "string" },
+    "region": { "type": "string" },
+
+    "vintage_start": { "type": "string", "format": "date" },
+    "vintage_end":   { "type": "string", "format": "date" },
+
+    "mechanism": {
+      "type": "string",
+      "enum": ["avoidance", "reduction", "removal"]
+    },
+
+    "expected_qty_tco2e": { "type": "number", "minimum": 0 },
+
+    "risks": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "additionality": { "type": "number", "minimum": 0, "maximum": 1 },
+        "permanence":   { "type": "number", "minimum": 0, "maximum": 1 },
+        "leakage":      { "type": "number", "minimum": 0, "maximum": 1 }
+      },
+      "required": ["additionality", "permanence", "leakage"]
+    },
+
+    "data_sources": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["satellite", "lidar", "iot", "manual", "model"]
+      },
+      "minItems": 1
+    },
+
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "iat": { "type": "string", "format": "date-time" },
+        "sig": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "alg": { "type": "string", "enum": ["hmac-sha256", "ed25519"] },
+            "kid": { "type": "string" },
+            "sig": { "type": "string" }
+          },
+          "required": ["alg", "kid", "sig"]
+        },
+        "transparency_anchor": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "type": { "type": "string", "enum": ["rekor", "rfc3161"] },
+            "log_index": { "type": "integer" },
+            "inclusion_proof": { "type": "string" }
+          },
+          "required": ["type"]
+        }
+      },
+      "required": ["iat", "sig"]
+    }
+  },
+  "required": [
+    "schema_version",
+    "project_id",
+    "registry",
+    "registry_project_id",
+    "methodology_code",
+    "country",
+    "vintage_start",
+    "vintage_end",
+    "mechanism",
+    "expected_qty_tco2e",
+    "risks",
+    "data_sources",
+    "provenance"
+  ]
+}
