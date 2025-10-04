@@ -1,0 +1,20 @@
+{
+  "schema_version": "carbon/v0.1",
+  "project_id": "CPR-woodland-001",
+  "registry": "verra",
+  "registry_project_id": "VCS-1234",
+  "methodology_code": "VM0042",
+  "country": "Brazil",
+  "region": "Para",
+  "vintage_start": "2023-01-01",
+  "vintage_end": "2025-12-31",
+  "mechanism": "removal",
+  "expected_qty_tco2e": 250000,
+  "risks": { "additionality": 0.2, "permanence": 0.25, "leakage": 0.1 },
+  "data_sources": ["satellite", "lidar", "manual"],
+  "provenance": {
+    "iat": "2025-10-03T00:10:00Z",
+    "sig": { "alg": "hmac-sha256", "kid": "default", "sig": "..." },
+    "transparency_anchor": { "type": "rekor", "log_index": 1234567, "inclusion_proof": "..." }
+  }
+}
