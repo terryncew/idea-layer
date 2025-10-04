@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Run Emissions Receipt v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "const": "run_emissions/v0.1" },
+    "job_id": { "type": "string" },
+    "env": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "provider": { "type": "string", "enum": ["aws", "gcp", "azure", "onprem", "other"] },
+        "region": { "type": "string" },
+        "accelerator": { "type": "string" }
+      }
+    },
+    "energy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kwh": { "type": "number", "minimum": 0 },
+        "measurement_method": { "type": "string", "enum": ["metered", "estimated"] },
+        "grid_intensity_gco2_per_kwh": { "type": "number", "minimum": 0 },
+        "total_gco2": { "type": "number", "minimum": 0 },
+        "tco2e": { "type": "number", "minimum": 0 }
+      },
+      "required": ["kwh", "measurement_method", "grid_intensity_gco2_per_kwh", "tco2e"]
+    },
+    "offset": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "clr_id": { "type": "string" },
+        "tco2e_retired": { "type": "number", "minimum": 0 },
+        "registry_serial": { "type": "string" },
+        "retirement_date": { "type": "string", "format": "date" },
+        "verification_url": { "type": "string" }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "iat": { "type": "string", "format": "date-time" },
+        "sig": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "alg": { "type": "string", "enum": ["hmac-sha256", "ed25519"] },
+            "kid": { "type": "string" },
+            "sig": { "type": "string" }
+          },
+          "required": ["alg", "kid", "sig"]
+        }
+      },
+      "required": ["iat", "sig"]
+    }
+  },
+  "required": ["schema_version", "job_id", "env", "energy", "provenance"]
+}
