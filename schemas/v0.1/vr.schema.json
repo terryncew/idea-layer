@@ -1,0 +1,61 @@
+{
+  "$schema":"http://json-schema.org/draft-07/schema#",
+  "$id":"https://example.org/schemas/v0.1/vr.schema.json",
+  "title":"Validation Receipt (VR) v0.1",
+  "type":"object",
+  "additionalProperties": false,
+  "required":["schema_version","receipt_id","idea_id","method","outcome","rater","provenance"],
+  "properties":{
+    "schema_version":{"const":"idea_layer/v0.1"},
+    "receipt_id":{"type":"string"},
+    "idea_id":{"type":"string"},
+    "method":{"type":"string","enum":["auto_probe","sim","lit_review","expert_check","micro_experiment"]},
+    "attestation":{
+      "type":"object",
+      "properties":{
+        "method_details":{"type":"string"},
+        "evidence_anchor":{"type":"string"}
+      },
+      "additionalProperties": false
+    },
+    "outcome":{
+      "type":"object",
+      "required":["support_score","counter_evidence_count","cost_minutes"],
+      "properties":{
+        "support_score":{"type":"number","minimum":0,"maximum":1},
+        "counter_evidence_count":{"type":"integer","minimum":0},
+        "cost_minutes":{"type":"integer","minimum":0}
+      },
+      "additionalProperties": false
+    },
+    "rater":{
+      "type":"object",
+      "required":["rater_anon_id","rater_rep","adversarial_flag"],
+      "properties":{
+        "rater_anon_id":{"type":"string"},
+        "rater_rep":{"type":"number","minimum":0,"maximum":1},
+        "adversarial_flag":{"type":"boolean"},
+        "rep_update_rule":{"type":"string"}
+      },
+      "additionalProperties": false
+    },
+    "provenance":{
+      "type":"object",
+      "required":["iat","sig"],
+      "properties":{
+        "iat":{"type":"string","format":"date-time"},
+        "sig":{
+          "type":"object",
+          "required":["alg","kid","sig"],
+          "properties":{
+            "alg":{"type":"string","enum":["hmac-sha256"]},
+            "kid":{"type":"string"},
+            "sig":{"type":"string"}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
