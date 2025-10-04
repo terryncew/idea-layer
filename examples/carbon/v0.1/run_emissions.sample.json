@@ -1,0 +1,23 @@
+{
+  "schema_version": "run_emissions/v0.1",
+  "job_id": "job-7ca2",
+  "env": { "provider": "aws", "region": "us-west-2", "accelerator": "A100x4" },
+  "energy": {
+    "kwh": 12.5,
+    "measurement_method": "estimated",
+    "grid_intensity_gco2_per_kwh": 400,
+    "total_gco2": 5000,
+    "tco2e": 0.005
+  },
+  "offset": {
+    "clr_id": "CLR-woodland-2024-01",
+    "tco2e_retired": 0.005,
+    "registry_serial": "VCS-1234:5500",
+    "retirement_date": "2025-10-01",
+    "verification_url": "https://terryncew.github.io/idea-layer/examples/carbon/v0.1/clr.sample.json"
+  },
+  "provenance": {
+    "iat": "2025-10-03T00:40:00Z",
+    "sig": { "alg": "hmac-sha256", "kid": "default", "sig": "..." }
+  }
+}
