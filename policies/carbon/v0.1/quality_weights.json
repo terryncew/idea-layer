@@ -1,0 +1,7 @@
+{
+  "w_additionality": 0.30,
+  "w_permanence": 0.40,
+  "w_leakage": 0.20,
+  "w_mrv_integrity": 0.10,
+  "drift_flag_threshold": 0.50
+}
