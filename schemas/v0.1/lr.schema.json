@@ -1,0 +1,70 @@
+{
+  "$schema":"http://json-schema.org/draft-07/schema#",
+  "$id":"https://example.org/schemas/v0.1/lr.schema.json",
+  "title":"Listing Receipt (LR) v0.1",
+  "type":"object",
+  "additionalProperties": false,
+  "required":[
+    "schema_version","receipt_id","idea_id","rollup","status","rights","route","provenance"
+  ],
+  "properties":{
+    "schema_version":{"const":"idea_layer/v0.1"},
+    "receipt_id":{"type":"string"},
+    "idea_id":{"type":"string"},
+    "rollup":{
+      "type":"object",
+      "required":["frontier_score","confidence_band","risk_notes"],
+      "properties":{
+        "frontier_score":{"type":"number","minimum":0,"maximum":1},
+        "confidence_band":{"type":"string","enum":["low","medium","high"]},
+        "risk_notes":{"type":"string"}
+      },
+      "additionalProperties": false
+    },
+    "status":{"type":"string","enum":["frontier","gold","hold","revoked"]},
+    "rights":{
+      "type":"object",
+      "required":["license"],
+      "properties":{
+        "license":{
+          "type":"object",
+          "required":["scope"],
+          "properties":{"scope":{"type":"string","enum":[
+            "audit-only","research-noncommercial","train-critic",
+            "limited-production","full-production"
+          ]},"terms_url":{"type":"string"}}
+        },
+        "royalty_split":{"type":"array","items":{"type":"integer","minimum":0,"maximum":100},"minItems":3,"maxItems":3},
+        "revocation_at":{"type":"string","format":"date-time"}
+      },
+      "additionalProperties": false
+    },
+    "route":{
+      "type":"object",
+      "required":["contact_route","listing_url"],
+      "properties":{
+        "contact_route":{"type":"string"},
+        "listing_url":{"type":"string"}
+      },
+      "additionalProperties": false
+    },
+    "provenance":{
+      "type":"object",
+      "required":["iat","sig"],
+      "properties":{
+        "iat":{"type":"string","format":"date-time"},
+        "sig":{
+          "type":"object",
+          "required":["alg","kid","sig"],
+          "properties":{
+            "alg":{"type":"string","enum":["hmac-sha256"]},
+            "kid":{"type":"string"},
+            "sig":{"type":"string"}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
