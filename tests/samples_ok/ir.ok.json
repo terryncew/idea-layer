@@ -1,0 +1,13 @@
+{
+  "schema_version": "idea_layer/v0.1",
+  "ids": { "idea_id": "00000000-0000-4000-8000-000000000001", "creator_anon_id": "anon:abc123" },
+  "privacy": { "idea_hmac": "hmac:example", "prompt_hmac": "hmac:example", "len_bin": "64-96" },
+  "signals": {
+    "kappa": 0.31,
+    "delta_hol": { "prompt": 0.0, "tool": 0.2, "retrieval": 0.1, "model": 0.0, "cache": 0.0 },
+    "ucr": 0.0, "cycles": 0, "contradictions": 0
+  },
+  "priors": { "plausibility_p": 0.70, "novelty_bucket": "med" },
+  "policy": { "license": { "scope": "research-noncommercial" }, "consent": { "version": "1.0" }, "retention_days": 365 },
+  "provenance": { "iat": "2025-10-03T00:10:00Z", "sig": { "alg": "hmac-sha256", "kid": "default", "sig": "placeholder" } }
+}
