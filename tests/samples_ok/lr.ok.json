@@ -1,0 +1,9 @@
+{
+  "schema_version": "idea_layer/v0.1",
+  "ids": { "idea_id": "00000000-0000-4000-8000-000000000001", "listing_id": "lr-0001" },
+  "rollup": { "frontier_score": 0.42, "confidence_band": [0.35, 0.50], "risk_notes": "guards clean; low κ" },
+  "status": "frontier",
+  "rights": { "license": { "terms_url": "https://example.org/terms", "scope": "research-noncommercial" }, "royalty_split": [0.7, 0.2, 0.1] },
+  "route": { "contact_route": "mailto:ideas@example.org", "listing_url": "https://example.org/ideas/0001" },
+  "provenance": { "iat": "2025-10-03T00:15:00Z", "sig": { "alg": "hmac-sha256", "kid": "default", "sig": "placeholder" } }
+}
