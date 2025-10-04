@@ -1,0 +1,10 @@
+{
+  "schema_version": "idea_layer/v0.1",
+  "receipt_id": "ulid-vr",
+  "idea_id": "uuid-placeholder",
+  "method": "lit_review",
+  "attestation": { "method_details": "searched 3 papers; matched abstract claims", "evidence_anchor": "sha256:..." },
+  "outcome": { "support_score": 0.62, "counter_evidence_count": 0, "cost_minutes": 20 },
+  "rater": { "rater_anon_id": "rater#z9", "rater_rep": 0.50, "adversarial_flag": false, "rep_update_rule": "elo-like, anchored to control agreement" },
+  "provenance": { "iat": "2025-10-03T12:10:00Z", "sig": { "alg":"hmac-sha256","kid":"default","sig":"..." } }
+}
