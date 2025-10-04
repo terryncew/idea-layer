@@ -1,0 +1,21 @@
+<!doctype html><meta charset="utf-8">
+<title>Frontier Board (Idea Layer v0.1)</title>
+<style>body{font-family:system-ui;margin:16px} .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.card{border:1px solid #e5e7eb;border-radius:12px;padding:12px} .badge{display:inline-block;padding:.2em .6em;border-radius:999px;background:#e0f2fe}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 10px}</style>
+<h1>Frontier Board</h1>
+<div class="grid" id="grid"></div>
+<script>
+const LRS=[ /* drop LR JSONs here at build time or fetch from a directory */ ];
+function card(lr){
+  const d=document.createElement('div'); d.className='card';
+  d.innerHTML=`<div class="badge">${lr.status.toUpperCase()}</div>
+  <h3 style="margin:.4em 0;">${lr.idea_id.slice(0,8)} • ${lr.receipt_id.slice(0,8)}</h3>
+  <div class="kv"><div>F</div><div>${(lr.rollup.frontier_score||0).toFixed(2)}</div>
+  <div>Conf</div><div>${lr.rollup.confidence_band}</div>
+  <div>Notes</div><div>${lr.rollup.risk_notes||'—'}</div>
+  <div>License</div><div>${lr.rights.license.scope}</div></div>`;
+  return d;
+}
+const root=document.getElementById('grid'); LRS.forEach(l=>root.appendChild(card(l)));
+</script>
