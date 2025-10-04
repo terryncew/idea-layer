@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "idea-layer"
+version = "0.1.0"
+description = "Idea Layer v0.1 — IR/VR/LR receipts, signing, and transparency anchors"
+requires-python = ">=3.10"
+authors = [{ name="Your Name", email="you@example.com" }]
+license = { text = "MIT" }
+readme = { file = "README.md", content-type = "text/markdown" }
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["jsonschema>=4.21.0", "pytest>=8.0.0"]
+
+[project.scripts]
+idea-layer = "idea_layer.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
