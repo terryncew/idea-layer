@@ -1,0 +1,249 @@
+name: Build Frontier Board
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "docs/receipts/*.json"
+      - ".github/workflows/generate-frontier-board.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  build-frontier-board:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Generate Frontier Board (static HTML)
+        run: |
+          mkdir -p docs/frontier
+          python - <<'PY'
+          import json, os, math, datetime, html
+
+          RECEIPTS_IDX = "docs/receipts/index.json"
+          OUT = "docs/frontier/index.html"
+
+          def load_receipts():
+              if not os.path.exists(RECEIPTS_IDX):
+                  return []
+              try:
+                  with open(RECEIPTS_IDX, "r", encoding="utf-8") as f:
+                      data = json.load(f)
+                      if isinstance(data, list):
+                          return data
+                      return []
+              except Exception:
+                  return []
+
+          def get_nested(d, *path, default=None):
+              cur = d
+              for p in path:
+                  if isinstance(cur, dict) and p in cur:
+                      cur = cur[p]
+                  else:
+                      return default
+              return cur
+
+          def pick_signal(r, key, default=0.0):
+              # Try signals.*, metrics.*, then top-level
+              v = get_nested(r, "signals", key, default=None)
+              if v is None: v = get_nested(r, "metrics", key, default=None)
+              if v is None: v = r.get(key, None)
+              if v is None: return default
+              try: return float(v)
+              except: return default
+
+          def pick_int(r, key, default=0):
+              v = get_nested(r, "signals", key, default=None)
+              if v is None: v = get_nested(r, "metrics", key, default=None)
+              if v is None: v = r.get(key, None)
+              try: return int(v)
+              except: return default
+
+          def delta_sigma(dvec):
+              # Combine Δhol attribution ~ sqrt(sum w_i * Δ_i^2)
+              weights = {"prompt":0.10,"tool":0.15,"retrieval":0.45,"model":0.10,"cache":0.20}
+              s=0.0
+              for k,w in weights.items():
+                  v=float(dvec.get(k,0.0) if isinstance(dvec,dict) else 0.0)
+                  s += w * (max(0.0,v)**2)
+              return s**0.5
+
+          def normalize_kappa(k, tau_k=0.75):
+              # κ̂ in [0,1] relative to threshold
+              if tau_k <= 0: return 1.0
+              return max(0.0, min(1.0, k/float(tau_k)))
+
+          def frontier_score(plaus, ucr, kappa, tau_k=0.75):
+              k_hat = normalize_kappa(kappa, tau_k)
+              P = max(0.0, min(1.0, plaus))
+              U = max(0.0, min(1.0, ucr))
+              return P * (1.0 - U) * (1.0 - k_hat)
+
+          receipts = load_receipts()
+          tau_k = 0.75
+          tau_F = 0.30
+
+          cards=[]
+          for i, r in enumerate(receipts):
+              rid = r.get("idea_id") or r.get("receipt_id") or f"R{i+1:04d}"
+              novelty = get_nested(r, "priors", "novelty_bucket", default="—")
+              plaus = get_nested(r, "priors", "plausibility_p", default=0.5)
+              try: plaus = float(plaus)
+              except: plaus = 0.5
+
+              kappa = pick_signal(r, "kappa", 0.0)
+              ucr   = pick_signal(r, "ucr", 0.0)
+              cycles = pick_int(r, "cycles", 0)
+              contradictions = pick_int(r, "contradictions", 0)
+
+              dhol = get_nested(r, "signals", "delta_hol", default=None)
+              if dhol is None: dhol = get_nested(r, "metrics", "delta_hol", default=None)
+              dhol_sig = delta_sigma(dhol) if isinstance(dhol, dict) else 0.0
+
+              F = frontier_score(plaus, ucr, kappa, tau_k=tau_k)
+
+              # Badge logic (IR-level): Frontier if threshold & guards clean
+              status = r.get("status")
+              if not status:
+                  status = "frontier" if (F >= tau_F and kappa < tau_k and cycles==0 and contradictions==0) else "hold"
+
+              cards.append({
+                  "rid": str(rid),
+                  "novelty": str(novelty),
+                  "plaus": plaus,
+                  "kappa": kappa,
+                  "ucr": ucr,
+                  "dhol_sig": dhol_sig,
+                  "cycles": cycles,
+                  "contradictions": contradictions,
+                  "F": F,
+                  "status": status.lower()
+              })
+
+          # Sort: Frontier first by F desc, then hold
+          cards.sort(key=lambda c: (c["status"]!="frontier", -c["F"], c["kappa"]))
+
+          updated = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%SZ")
+          total = len(cards)
+          n_frontier = sum(1 for c in cards if c["status"]=="frontier")
+          n_hold = total - n_frontier
+
+          def chip(label): return f'<span class="chip">{html.escape(label)}</span>'
+
+          def fmt_pct(x): return f"{round(100*max(0,min(1,x)))}%"
+          def fmt_3(x): return f"{x:.3f}"
+
+          head = """<!doctype html>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <title>Frontier Board · Idea Receipts</title>
+          <style>
+          :root{
+            --bg:#ffffff; --ink:#0b0b10; --mut:#6a6f7a; --line:#e9ecf2; --tile:#ffffff;
+            --ok:#16a34a; --warn:#f59e0b; --hold:#6b7280; --chip:#f4f6fb; --chipline:#e6eaf3;
+          }
+          html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial}
+          .wrap{max-width:980px;margin:0 auto;padding:18px}
+          h1{margin:0;font-size:22px}
+          .sub{color:var(--mut);font-size:12px;margin:6px 0 14px}
+          .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+          @media (max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}}
+          @media (max-width:640px){.grid{grid-template-columns:1fr}}
+          .card{background:var(--tile);border:1px solid var(--line);border-radius:14px;padding:12px}
+          .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+          .muted{color:var(--mut);font-size:12px}
+          .big{font-size:18px;font-weight:700}
+          .pill{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--line);padding:4px 8px;border-radius:999px;font-weight:700}
+          .frontier{background:#ecfdf5;border-color:#d1fae5;color:#065f46}
+          .hold{background:#f3f4f6;border-color:#e5e7eb;color:#374151}
+          .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+          .chip{background:var(--chip);border:1px solid var(--chipline);border-radius:999px;padding:.2em .6em;font-size:12px}
+          .kv{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;align-items:center;margin-top:8px}
+          .divider{height:1px;background:var(--line);margin:10px 0}
+          .bar{position:relative;width:100%;height:8px;background:#f3f5f9;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+          .fill{position:absolute;left:0;top:0;bottom:0;background:#0b0b10;opacity:.9}
+          .foot{margin-top:10px;color:var(--mut);font-size:12px}
+          .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+          </style>
+          <div class="wrap">
+            <div class="header">
+              <div>
+                <h1>Frontier Board</h1>
+                <div class="sub">Anonymized Idea Receipts (IR). <b>Frontier</b> = promising, under-supported, low-stress. Content-minimal. Signed & anchorable.</div>
+              </div>
+              <div class="pill frontier">FRONTIER: """ + str(n_frontier) + """</div>
+            </div>
+            <div class="chips">
+              <span class="chip">Updated """ + updated + """ UTC</span>
+              <span class="chip">Total """ + str(total) + """</span>
+              <span class="chip">τκ """ + fmt_3(tau_k) + """</span>
+              <span class="chip">τF """ + fmt_3(tau_F) + """</span>
+            </div>
+            <div class="grid">
+          """
+
+          body=""
+          for c in cards:
+              status_cls = "frontier" if c["status"]=="frontier" else "hold"
+              status_lbl = "FRONTIER" if c["status"]=="frontier" else "HOLD"
+              body += f'''
+              <div class="card">
+                <div class="row">
+                  <div class="big">{html.escape(c["rid"])}</div>
+                  <div class="pill {status_cls}">{status_lbl}</div>
+                </div>
+                <div class="chips">
+                  {chip("κ "+fmt_3(c["kappa"]))}
+                  {chip("UCR "+fmt_pct(c["ucr"]))}
+                  {chip("P "+fmt_pct(c["plaus"]))}
+                  {chip("ΔΣ "+fmt_3(c["dhol_sig"]))}
+                  {chip("novelty "+html.escape(c["novelty"]))}
+                </div>
+                <div class="divider"></div>
+                <div class="kv">
+                  <div class="muted">Frontier score F</div>
+                  <div>
+                    <div class="bar"><div class="fill" style="width:{max(0,min(1,c["F"]))*100:.1f}%"></div></div>
+                    <div class="muted">{fmt_3(c["F"])} ( = P·(1−UCR)·(1−κ̂) )</div>
+                  </div>
+                  <div class="muted">Guards</div>
+                  <div class="muted">cycles {c["cycles"]} · contradictions {c["contradictions"]}</div>
+                </div>
+              </div>
+              '''
+
+          tail = """
+            </div>
+            <div class="foot">Rules (IR-level): Frontier if F ≥ τF and κ < τκ and guards clean (cycles=0, contradictions=0). Gold requires Validation Receipts (VRs) and inter-rater agreement (see spec).</div>
+          </div>
+          """
+          html_out = head + body + tail
+          with open(OUT, "w", encoding="utf-8") as f:
+              f.write(html_out)
+          print(f"Wrote {OUT}")
+          PY
+
+      - name: Commit & push board
+        run: |
+          git config user.name  "github-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git add docs/frontier/index.html
+          git commit -m "build(frontier): update Frontier Board [skip ci]" || echo "No changes"
+          git push
+
+      - name: Upload board artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontier-board
+          path: docs/frontier/index.html
