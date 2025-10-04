@@ -1,0 +1,15 @@
+{
+  "schema_version": "carbon/v0.1",
+  "cpr_id": "CPR-woodland-001",
+  "verifier": { "name": "Acme Verifiers Ltd", "accreditation_id": "ISO14064-1" },
+  "method_details": "Field plots + LIDAR; seed=42",
+  "uncertainty_pct": 7.5,
+  "issued_delta_tco2e": 98000,
+  "buffer_pct": 12.0,
+  "evidence_anchor": "sha256:abcd1234",
+  "rater": { "rater_anon_id": "r_01", "rater_rep": 0.72 },
+  "provenance": {
+    "iat": "2025-10-03T00:20:00Z",
+    "sig": { "alg": "hmac-sha256", "kid": "default", "sig": "..." }
+  }
+}
