@@ -1,0 +1,9 @@
+{
+  "schema_version": "idea_layer/v0.1",
+  "ids": { "idea_id": "00000000-0000-4000-8000-000000000001", "vr_id": "vr-0001" },
+  "method": "lit_review",
+  "attestation": { "method_details": "2-abstract match check", "evidence_anchor": "sha256:abc" },
+  "outcome": { "support_score": 0.62, "counter_evidence_count": 0, "cost_minutes": 18 },
+  "rater": { "rater_anon_id": "r:xyz", "rater_rep": 0.50, "adversarial_flag": false },
+  "provenance": { "iat": "2025-10-03T00:12:00Z", "sig": { "alg": "hmac-sha256", "kid": "default", "sig": "placeholder" } }
+}
