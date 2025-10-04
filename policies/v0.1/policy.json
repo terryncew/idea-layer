@@ -1,0 +1,17 @@
+{
+  "schema_version": "idea_layer/v0.1",
+  "thresholds": {
+    "tau_k": 0.75,
+    "tau_F": 0.30,
+    "tau_S": 0.60,
+    "N_gold": 3,
+    "IRR_min": 0.60
+  },
+  "bands": {
+    "kappa": {"green":[0.0,0.20], "amber":[0.20,0.75], "red":[0.75,1.0]}
+  },
+  "conformance_controls": {
+    "rate": 0.08,
+    "commit_reveal": true
+  }
+}
